@@ -1,4 +1,5 @@
 import React from 'react';
+import { DownloadIcon } from './icons/DownloadIcon';
 
 interface ResultDisplayProps {
   isLoading: boolean;
@@ -15,6 +16,17 @@ const LoadingSpinner: React.FC = () => (
 );
 
 const ResultDisplay: React.FC<ResultDisplayProps> = ({ isLoading, resultImage, error }) => {
+
+  const handleDownload = () => {
+    if (!resultImage) return;
+    const link = document.createElement('a');
+    link.href = `data:image/png;base64,${resultImage}`;
+    link.download = 'virtual-try-on.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="w-full max-w-2xl bg-gray-800 rounded-xl p-6 border border-gray-700 min-h-[30rem] flex items-center justify-center shadow-lg">
       {isLoading && <LoadingSpinner />}
@@ -32,6 +44,17 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ isLoading, resultImage, e
                 alt="Generated virtual try-on" 
                 className="rounded-lg shadow-2xl mx-auto max-w-full max-h-[25rem] object-contain" 
             />
+            <button
+              onClick={handleDownload}
+              className={`
+                mt-6 px-6 py-3 bg-brand-primary text-white font-bold text-base rounded-lg shadow-md
+                flex items-center justify-center gap-2 transition-all duration-300 mx-auto
+                hover:bg-blue-800 hover:shadow-lg transform hover:-translate-y-0.5
+              `}
+            >
+              <DownloadIcon />
+              下载图片
+            </button>
         </div>
       )}
       {!isLoading && !resultImage && !error && (

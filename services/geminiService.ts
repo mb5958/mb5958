@@ -20,6 +20,17 @@ const PROMPT = `
 5.  **输出:** 只生成最终合成的图片。
 `;
 
+const REFINE_PROMPT = `
+请将这张合成图片转化为一张单一的、高度逼真的照片。
+图片中包含一个人物和一件已经放置好的服装。您的任务是将服装无缝地融合到人物身上，使其看起来就像是真的穿在身上一样。
+请重点处理以下细节，以达到照片级的真实感：
+1.  **光影与阴影：** 根据环境和人物姿态，为服装添加自然的光照和阴影效果。
+2.  **褶皱与垂坠：** 根据人物的身体轮廓和姿势，生成符合布料物理特性的褶皱和垂坠感。
+3.  **边缘融合：** 确保服装边缘与人物身体和背景完美融合，没有任何生硬或不自然的痕迹。
+最终的输出应该是一张高质量、令人信服的单张照片。请只返回处理后的图片。
+`;
+
+
 export const generateStyledImage = async (personImage: ImageFile, clothingImage: ImageFile): Promise<string | null> => {
     try {
         const response = await ai.models.generateContent({
@@ -59,5 +70,41 @@ export const generateStyledImage = async (personImage: ImageFile, clothingImage:
     } catch (error) {
         console.error("Error generating image with Gemini API:", error);
         throw new Error("生成图片失败。请检查您的 API 密钥和网络连接。");
+    }
+};
+
+export const generateRefinedImage = async (compositeImage: ImageFile): Promise<string | null> => {
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image-preview',
+            contents: {
+                parts: [
+                    {
+                        inlineData: {
+                            data: compositeImage.base64,
+                            mimeType: compositeImage.mimeType,
+                        },
+                    },
+                    {
+                        text: REFINE_PROMPT,
+                    },
+                ],
+            },
+            config: {
+                responseModalities: [Modality.IMAGE, Modality.TEXT],
+            },
+        });
+
+        if (response.candidates && response.candidates[0].content.parts) {
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData && part.inlineData.data) {
+                    return part.inlineData.data;
+                }
+            }
+        }
+        return null;
+    } catch (error) {
+        console.error("Error refining image with Gemini API:", error);
+        throw new Error("优化图片失败。请检查您的网络连接。");
     }
 };

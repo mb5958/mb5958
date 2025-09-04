@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { ImageFile } from '../types';
 import { UploadIcon } from './icons/UploadIcon';
 import { TrashIcon } from './icons/TrashIcon';
@@ -6,13 +6,24 @@ import { TrashIcon } from './icons/TrashIcon';
 interface ImageUploaderProps {
   title: string;
   onImageUpload: (file: ImageFile | null) => void;
+  imageFile: ImageFile | null;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ title, onImageUpload }) => {
+const ImageUploader: React.FC<ImageUploaderProps> = ({ title, onImageUpload, imageFile }) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (imageFile) {
+      setImagePreview(`data:${imageFile.mimeType};base64,${imageFile.base64}`);
+      setFileName(imageFile.name);
+    } else {
+      setImagePreview(null);
+      setFileName(null);
+    }
+  }, [imageFile]);
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -20,7 +31,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ title, onImageUpload }) =
       reader.readAsDataURL(file);
       reader.onload = () => {
         const result = reader.result as string;
-        // remove data:image/jpeg;base64, prefix
         resolve(result.split(',')[1]);
       };
       reader.onerror = (error) => reject(error);
@@ -36,8 +46,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ title, onImageUpload }) =
         mimeType: file.type,
       };
       onImageUpload(imageFile);
-      setImagePreview(URL.createObjectURL(file));
-      setFileName(file.name);
     }
   }, [onImageUpload]);
 
@@ -68,8 +76,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ title, onImageUpload }) =
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    setImagePreview(null);
-    setFileName(null);
     onImageUpload(null);
   };
 
