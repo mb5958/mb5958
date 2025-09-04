@@ -8,15 +8,16 @@ if (!process.env.API_KEY) {
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const PROMPT = `
-Analyze the two images provided.
-The first image contains a person. The second image contains an item of clothing.
-Your task is to create a new, photorealistic image where the person from the first image is wearing the clothing from the second image.
+请分析提供的两张图片。
+第一张图片包含一个人物。第二张图片包含一件服装。
+您的任务是创建一张新的、逼真的照片，照片中第一个图片里的人物穿着第二个图片里的服装。
 
-Key requirements:
-1.  **Preserve Clothing Style:** The clothing's design, texture, color, and fit from the second image must be accurately transferred to the person.
-2.  **Maintain Person's Identity:** The person's appearance, pose, and the background from the first image should be kept as consistent as possible.
-3.  **Seamless Integration:** The final image must look natural and believable, as if the person were genuinely wearing the clothes. Avoid any artificial or 'photoshopped' look.
-4.  **Output:** Generate only the final composed image.
+关键要求:
+1.  **保留服装风格:** 必须将第二张图片中服装的设计、纹理和颜色准确地转移到人物身上。
+2.  **精准贴合与垂坠感:** 这是最关键的一点。请调整服装的大小和形状，使其逼真地贴合人物的体型和姿势。服装应该自然垂下，展现出真实生活中应有的褶皱、皱纹和轮廓。服装原有的版型（例如，宽松、紧身、Oversize）应在适应人物身材的基础上得以保持。
+3.  **保持人物特征:** 人物的外貌、姿势以及第一张图片中的背景应尽可能保持一致。
+4.  **无缝融合:** 最终的图片必须看起来自然可信，就好像人物真的穿着这件衣服一样。避免任何人工或“PS”的痕迹。
+5.  **输出:** 只生成最终合成的图片。
 `;
 
 export const generateStyledImage = async (personImage: ImageFile, clothingImage: ImageFile): Promise<string | null> => {
